@@ -1,7 +1,7 @@
 import random
 
-class Card:
 
+class Card:
     card_value = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "Jack": 10, "Queen": 10, "King": 10} # No ace as it can take two value and is handled later
 
     def __init__(self, rank, suit):
@@ -13,7 +13,6 @@ class Card:
 
 
 class Shoe:
-
     def __init__(self, deckcount):
         self.deckcount = int(deckcount)
         self.ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
@@ -37,7 +36,6 @@ class Shoe:
 
 
 class Hand:
-
     def __init__(self):
         self.cards = []
         self.is_soft = False
@@ -69,7 +67,6 @@ class Hand:
 
         return score
 
-
     def show_hand(self):
         for card in self.cards:
             print(card.rank, card.suit)
@@ -81,7 +78,6 @@ class Hand:
 
 
 class Player:
-
     def __init__(self):
         self.hand = Hand()
 
@@ -91,7 +87,6 @@ class Player:
 
 
 class Dealer:
-
     def __init__(self): # S17 should be a boolean where True indicates the dealer hits on a soft 17
         self.hand = Hand()
         self.show_all = False # Boolean to determine if a card should still be kept face down when displaying the dealaers hand
@@ -113,7 +108,6 @@ class Dealer:
     
 
 class Game:
-
     def __init__(self, deckcount):
         self.player = Player()
         self.dealer = Dealer()
@@ -140,10 +134,9 @@ class Game:
         else:
             self.dealer.hand.show_hand()
 
-
     def player_turn(self):
         score = self.player.hand.calculate_score()
-
+        
         while score < 21:
             self.display_cards()
             current_action = self.player.player_action()
@@ -160,12 +153,10 @@ class Game:
             print("----- Player Bust; dealer wins -----")
             self.display_cards()
 
-
     def dealer_turn(self):
         self.dealer.show_all = True
         self.display_cards()
         action = self.dealer.dealer_action()
-
         while action == "hit":
             self.dealer.hand.draw_card(self.shoe)
             self.display_cards() # maybe add time delay before to make it clearer
@@ -186,7 +177,6 @@ class Game:
         else:
             return "Push"
 
-
     def play_round(self):
         self.setup_game()
         self.player_turn()
@@ -199,5 +189,5 @@ class Game:
         return self.determine_winner()
 
 
-mygame = Game(2)
+mygame = Game(2) # small test to play the game
 print(mygame.play_round())
