@@ -80,12 +80,16 @@ class Hand:
 
 
 class Player:
-    def __init__(self):
+    def __init__(self, strategy=None):
         self.hand = Hand()
+        self.strategy = strategy
 
-    def player_action(self):
-        action = input("Would you like to hit or stand? (hit/stand) ")
-        return action
+    def player_action(self): # may need to add what the dealers 2nd card is depending on strategy used in simulation
+        if self.strategy is None:
+            action = input("Would you like to hit or stand? (hit/stand) ")
+            return action
+        else:
+            return self.strategy()
 
 
 class Dealer:
@@ -110,10 +114,15 @@ class Dealer:
     
 
 class Game:
-    def __init__(self, deckcount):
-        self.player = Player()
+    def __init__(self, deckcount, player=None, is_simulation=False):
+        if player is None:
+            self.player = Player()
+        else:
+            self.player = player
+
         self.dealer = Dealer()
         self.shoe = Shoe(deckcount)
+        self.is_simulation = is_simulation # boolean where true represents this game is a simulation so do not display all cards every turn
 
     def setup_game(self): # deals initial cards and resets from previous rounds
         self.player.hand.reset_hand()
@@ -140,8 +149,10 @@ class Game:
         score = self.player.hand.calculate_score()
         
         while score < 21:
-            self.display_cards()
-            current_action = self.player.player_action()
+            if self.is_simulation == False:
+                self.display_cards()
+                
+            current_action = self.player.player_action() # again if required put dealers 2nd card as input here
             if current_action == "hit":
                 self.player.hand.add_card(self.shoe.draw_card())
             elif current_action == "stand":
@@ -152,16 +163,22 @@ class Game:
 
         if score > 21:
             self.player.hand.is_bust = True
-            print("----- Player Bust; dealer wins -----")
-            self.display_cards()
+            if self.is_simulation == False:
+                print("----- Player Bust; dealer wins -----")
+                self.display_cards()
 
     def dealer_turn(self):
         self.dealer.show_all = True
-        self.display_cards()
+
+        if self.is_simulation == False:
+            self.display_cards()
+
         action = self.dealer.dealer_action()
         while action == "hit":
             self.dealer.hand.add_card(self.shoe.draw_card())
-            self.display_cards() # maybe add time delay before to make it clearer
+
+            if self.is_simulation == False:
+                self.display_cards() # maybe add time delay before to make it clearer
             action = self.dealer.dealer_action()
 
     def determine_winner(self): # different name for this function?
@@ -190,6 +207,6 @@ class Game:
 
         return self.determine_winner()
 
-
-mygame = Game(2) # small test to play the game
-print(mygame.play_round())
+if __name__ == "__main__":
+    mygame = Game(2) # small test to play the game
+    print(mygame.play_round())
