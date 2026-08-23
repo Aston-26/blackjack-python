@@ -15,4 +15,4 @@ A simple implementation of Blackjack in Python developed as a personal project t
 - Add statistics for results of simulation
 - Display results of simulation (Matplotlib)
 - Investigate the effect of bet amount on simulation results
-- Move draw_card() to shoe instead of hand
+- ~~Move draw_card() to shoe instead of hand~~

@@ -34,6 +34,9 @@ class Shoe:
         self.fill_shoe()
         self.shuffle_shoe()
 
+    def draw_card(self):
+        return self.cards.pop()
+
 
 class Hand:
     def __init__(self):
@@ -41,9 +44,8 @@ class Hand:
         self.is_soft = False
         self.is_bust = False
 
-    def draw_card(self, thisshoe):
-        chosen_card = thisshoe.cards.pop()
-        self.cards.append(chosen_card)
+    def add_card(self, card):
+        self.cards.append(card)
 
     def calculate_score(self):
         score = 0
@@ -120,8 +122,8 @@ class Game:
         self.dealer.show_all = False
 
         for _ in range(2):
-            self.player.hand.draw_card(self.shoe)
-            self.dealer.hand.draw_card(self.shoe)
+            self.player.hand.add_card(self.shoe.draw_card())
+            self.dealer.hand.add_card(self.shoe.draw_card())
 
     def display_cards(self):
         print("----- Players hand -----")
@@ -141,7 +143,7 @@ class Game:
             self.display_cards()
             current_action = self.player.player_action()
             if current_action == "hit":
-                self.player.hand.draw_card(self.shoe)
+                self.player.hand.add_card(self.shoe.draw_card())
             elif current_action == "stand":
                 break
             else:
@@ -158,7 +160,7 @@ class Game:
         self.display_cards()
         action = self.dealer.dealer_action()
         while action == "hit":
-            self.dealer.hand.draw_card(self.shoe)
+            self.dealer.hand.add_card(self.shoe.draw_card())
             self.display_cards() # maybe add time delay before to make it clearer
             action = self.dealer.dealer_action()
 
