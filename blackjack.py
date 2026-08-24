@@ -84,12 +84,12 @@ class Player:
         self.hand = Hand()
         self.strategy = strategy
 
-    def player_action(self): # may need to add what the dealers 2nd card is depending on strategy used in simulation
+    def player_action(self, dealer_upcard=None): # may need to add what the dealers 2nd card is depending on strategy used in simulation
         if self.strategy is None:
             action = input("Would you like to hit or stand? (hit/stand) ")
             return action
         else:
-            return self.strategy()
+            return self.strategy(self.hand, dealer_upcard)
 
 
 class Dealer:
@@ -152,7 +152,7 @@ class Game:
             if self.is_simulation == False:
                 self.display_cards()
                 
-            current_action = self.player.player_action() # again if required put dealers 2nd card as input here
+            current_action = self.player.player_action(self.dealer.hand.cards[0]) # pass in dealer upcard
             if current_action == "hit":
                 self.player.hand.add_card(self.shoe.draw_card())
             elif current_action == "stand":
