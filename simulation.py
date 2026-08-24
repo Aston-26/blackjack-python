@@ -1,16 +1,10 @@
 from blackjack import Game, Player
 # import matplotlib - do this when ready to add graphs
 
-# made this dictionary just for testing, it probably makes more sense being local in simulate() or even being a dedicated dataclass
-# also include support for storing how many times player/dealer has busted and compare that with the expected number of times they bust
-results = { "Player": 0,
-            "Dealer": 0,
-            "Push": 0 }
-
 # CONSTANTS
 NUMBER_OF_HANDS = 100
 DECKS_IN_SHOE = 2
-# ideas to add when necessary - initial balance, bet amount, hit on soft 17 (here instead of in blackjack.py?), number of simulations, blackjack payout, when to refresh shoe etc.
+# ideas to add when necessary - initial balance, bet amount, hit on soft 17 (here instead of in blackjack.py?), number of simulations, blackjack payout, when to reshuffle shoe etc.
 
 def never_bust_strategy(hand, dealer_upcard): # dealer_upcard will not be used, but for best OOP practices the main program should not be changed to check if the strategy being used requires this information or not
     score = hand.calculate_score()
@@ -33,6 +27,11 @@ def simulate(strategy, num_hands=NUMBER_OF_HANDS, deckcount=DECKS_IN_SHOE):
     player = Player(strategy)
     game = Game(deckcount, player, True)
 
+    # consider a dedicated dataclass instead of a dictionary as I add support for tracking more metrics
+    results = { "Player": 0,
+            "Dealer": 0,
+            "Push": 0 }
+
     for _ in range(num_hands):
         result = game.play_round()
 
@@ -43,9 +42,11 @@ def simulate(strategy, num_hands=NUMBER_OF_HANDS, deckcount=DECKS_IN_SHOE):
         else:
             results["Push"] += 1
 
+    return results
+
 
 # small test
-simulate(never_bust_strategy)
+results = simulate(never_bust_strategy)
 
 for key, pair in results.items():
     print(f"{key}: {pair}")
