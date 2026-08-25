@@ -43,6 +43,7 @@ class Hand:
         self.cards = []
         self.is_soft = False
         self.is_bust = False
+        self.is_doubled = False
 
     def add_card(self, card):
         self.cards.append(card)
@@ -71,12 +72,13 @@ class Hand:
 
     def show_hand(self):
         for card in self.cards:
-            print(card.rank, card.suit)
+            print(card.rank, "of", card.suit)
 
     def reset_hand(self):
         self.cards = []
         self.is_soft = False
         self.is_bust = False
+#        self.is_doubled = False
 
 
 class Player:
@@ -84,9 +86,9 @@ class Player:
         self.hand = Hand()
         self.strategy = strategy
 
-    def player_action(self, dealer_upcard=None): # may need to add what the dealers 2nd card is depending on strategy used in simulation
+    def player_action(self, dealer_upcard):
         if self.strategy is None:
-            action = input("Would you like to hit or stand? (hit/stand) ")
+            action = input("Enter player move: (hit/stand/double) ")
             return action
         else:
             return self.strategy(self.hand, dealer_upcard)
@@ -151,20 +153,25 @@ class Game:
         while score < 21:
             if self.is_simulation == False:
                 self.display_cards()
-                
-            current_action = self.player.player_action(self.dealer.hand.cards[0]) # pass in dealer upcard
+
+            dealer_upcard = self.dealer.hand.cards[0]
+            current_action = self.player.player_action(dealer_upcard)
+
             if current_action == "hit":
                 self.player.hand.add_card(self.shoe.draw_card())
             elif current_action == "stand":
                 break
+#            elif current_action == "double":
+#                if len(self.player.hand.cards) == 2:
+#                   pass
             else:
-                print("Invalid action (hit/stand)")
+                print("Invalid action (hit/stand/double)")
             score = self.player.hand.calculate_score()
 
         if score > 21:
             self.player.hand.is_bust = True
             if self.is_simulation == False:
-                print("----- Player Bust; dealer wins -----")
+                print("Player bust --> dealer wins")
                 self.display_cards()
 
     def dealer_turn(self):
@@ -208,5 +215,16 @@ class Game:
         return self.determine_winner()
 
 if __name__ == "__main__":
+    print("Welcome!")
+    print("You can play blackjack here, simply enter your move as hit/stand/double")
+    print("You can use \"double\" to double down, but only on your first move of a hand")
+    print("-" * 24)
+
     mygame = Game(2) # small test to play the game
-    print(mygame.play_round())
+    result = mygame.play_round()
+    print ("-" * 24)
+
+    if result != "Push":
+        print(f"{result} wins")
+    else:
+        print("Push --> Bet returned") # in the case of a push the player keeps their bet, so I will put that in the message even though there is no support for betting yet

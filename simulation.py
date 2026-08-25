@@ -35,7 +35,7 @@ def simulate(strategy, num_hands=NUMBER_OF_HANDS, deckcount=DECKS_IN_SHOE):
     for _ in range(num_hands):
         result = game.play_round()
 
-        if result == "Player":
+        if result == "Player": # maybe a win on a doubled hand should count as +2? Not sure yet
             results["Player"] += 1
         elif result == "Dealer":
             results["Dealer"] += 1
