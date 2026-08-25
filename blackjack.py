@@ -186,9 +186,6 @@ class Game:
 
         if score > 21:
             self.player.hand.is_bust = True
-            if self.is_simulation == False:
-                print("Player bust --> dealer wins")
-                self.display_cards()
 
     def dealer_turn(self):
         self.dealer.show_all = True
@@ -234,13 +231,17 @@ if __name__ == "__main__":
     print("Welcome!")
     print("You can play blackjack here, simply enter your move as hit/stand/double")
     print("You can use \"double\" to double down, but only on your first move of a hand")
-    print("-" * 24)
+    print("-" * 27)
 
     mygame = Game(2) # small test to play the game
     result = mygame.play_round()
-    print ("-" * 24)
+    print ("-" * 27)
 
-    if result != "Push":
+    if mygame.player.hand.is_bust:
+        mygame.display_cards()
+        print("-" * 24)
+        print("Player bust --> dealer wins")
+    elif result != "Push":
         print(f"{result} wins")
     else:
         print("Push --> Bet returned") # in the case of a push the player keeps their bet, so I will put that in the message even though there is no support for betting yet
