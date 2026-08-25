@@ -1,5 +1,5 @@
-# Blackjack
-A simple implementation of Blackjack in Python developed as a personal project to practise writing object-oriented code in a clear and well-structured way.
+# Blackjack & Simulation
+A simple implementation of Blackjack in Python developed as a personal project to practise writing object-oriented code in a clear and well-structured way. Includes support for running a simulation which plays many rounds according to a player strategy (currently only a never bust strategy but more coming soon) and displays the results.
 
 ## Current version
 - Command line Blackjack with core game rules
@@ -10,7 +10,7 @@ A simple implementation of Blackjack in Python developed as a personal project t
 
 ## TODO
 - Add bankroll and variable bet amounts
-- Add automatic simulation
+- ~~Add automatic simulation~~
 - Make shoe persistent and add settings to control when shoe is reset
 - Add statistics for results of simulation
 - Display results of simulation (Matplotlib)
