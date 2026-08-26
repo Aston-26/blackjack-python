@@ -13,8 +13,10 @@ class Card:
 
 
 class Shoe:
-    def __init__(self, deckcount):
+    def __init__(self, deckcount, penetration=0.75):
         self.deckcount = int(deckcount)
+        self.penetration = penetration # real number on the interval [0, 1] to represent the fraction of the shoe to play before reshuffling
+        self.cut_card_threshold = round(self.deckcount * 52 * (1 - self.penetration))
         self.ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
         self.suits = ["Spades", "Hearts", "Diamonds", "Clubs"]
         self.cards = []
@@ -36,6 +38,12 @@ class Shoe:
 
     def draw_card(self):
         return self.cards.pop()
+
+    def check_reshuffle(self):
+        if len(self.cards) <= self.cut_card_threshold:
+            return True
+        else:
+            return False
 
 
 class Hand:
@@ -95,9 +103,9 @@ class Player:
 
 
 class Dealer:
-    def __init__(self): # S17 should be a boolean where True indicates the dealer hits on a soft 17
+    def __init__(self):
         self.hand = Hand()
-        self.show_all = False # Boolean to determine if a card should still be kept face down when displaying the dealaers hand
+        self.show_all = False # Boolean to determine if a card should still be kept face down when displaying the dealers hand
         #self.hit_on_S17 = True
 
     def dealer_action(self):
@@ -124,13 +132,14 @@ class Game:
 
         self.dealer = Dealer()
         self.shoe = Shoe(deckcount)
-        self.is_simulation = is_simulation # boolean where true represents this game is a simulation so do not display all cards every turn
+        self.is_simulation = is_simulation # boolean where true represents this game is a simulation so do not display cards
 
     def setup_game(self): # deals initial cards and resets from previous rounds
+        self.dealer.show_all = False
         self.player.hand.reset_hand()
         self.dealer.hand.reset_hand()
-        self.shoe.reset_shoe() # come back and change this later to investiage the effect of when the shoe is shuffled
-        self.dealer.show_all = False
+        if self.shoe.check_reshuffle():
+            self.shoe.reset_shoe()
 
         for _ in range(2):
             self.player.hand.add_card(self.shoe.draw_card())
@@ -233,7 +242,8 @@ if __name__ == "__main__":
     print("You can use \"double\" to double down, but only on your first move of a hand")
     print("-" * 27)
 
-    mygame = Game(2) # small test to play the game
+    mygame = Game(6) # small test to play the game
+    print(mygame.shoe.cut_card_threshold)
     result = mygame.play_round()
     print ("-" * 27)
 
