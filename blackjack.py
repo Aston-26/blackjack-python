@@ -13,19 +13,20 @@ class Card:
 
 
 class Shoe:
+    ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
+    suits = ["Spades", "Hearts", "Diamonds", "Clubs"]
+
     def __init__(self, deckcount, penetration=0.75):
         self.deckcount = int(deckcount)
         self.penetration = penetration # real number on the interval [0, 1] to represent the fraction of the shoe to play before reshuffling
         self.cut_card_threshold = round(self.deckcount * 52 * (1 - self.penetration))
-        self.ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"]
-        self.suits = ["Spades", "Hearts", "Diamonds", "Clubs"]
         self.cards = []
         self.reset_shoe()
 
     def fill_shoe(self):
         for _ in range(self.deckcount):
-            for suit in self.suits:
-                for rank in self.ranks:
+            for suit in Shoe.suits:
+                for rank in Shoe.ranks:
                     self.cards.append(Card(rank, suit))
 
     def shuffle_shoe(self):
