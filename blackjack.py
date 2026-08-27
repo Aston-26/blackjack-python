@@ -53,6 +53,7 @@ class Hand:
         self.is_soft = False
         self.is_bust = False
         self.is_doubled = False
+        self.is_surrendered = False
 
     def add_card(self, card):
         self.cards.append(card)
@@ -88,6 +89,7 @@ class Hand:
         self.is_soft = False
         self.is_bust = False
         self.is_doubled = False
+        self.is_surrendered = False
 
 
 class Player:
@@ -97,7 +99,7 @@ class Player:
 
     def player_action(self, dealer_upcard):
         if self.strategy is None:
-            action = input("Enter player move (hit/stand/double): ")
+            action = input("Enter player move: ")
             return action
         else:
             return self.strategy(self.hand, dealer_upcard)
@@ -189,8 +191,16 @@ class Game:
                     else:
                         print("You cannot double down now.")
 
+            elif current_action == "surrender":
+                if len(self.player.hand.cards) == 2:
+                    self.player.hand.is_surrendered = True
+                    # when bankroll is added, half the player bet and return it to them here
+                    break
+                else:
+                    print("You cannot surrender now")
+
             else:
-                print("Invalid action (hit/stand/double)")
+                print("Invalid action")
 
             score = self.player.hand.calculate_score()
 
@@ -215,14 +225,14 @@ class Game:
         player_score = self.player.hand.calculate_score()
         dealer_score = self.dealer.hand.calculate_score()
 
-        if player_score > 21:
-            return "Dealer"
-        elif dealer_score > 21:
-            return "Player"
-        elif player_score > dealer_score:
+        if dealer_score > 21:
             return "Player"
         elif dealer_score > player_score:
             return "Dealer"
+        elif player_score > 21 or self.player.hand.is_surrendered:
+            return "Dealer"
+        elif player_score > dealer_score:
+            return "Player"
         else:
             return "Push"
 
@@ -233,14 +243,16 @@ class Game:
         if self.player.hand.is_bust == True:
             return "Dealer" # player is bust so dealer wins
 
-        self.dealer_turn()
+        if not self.player.hand.is_surrendered:
+            self.dealer_turn()
 
         return self.determine_winner()
 
 if __name__ == "__main__":
     print("Welcome!")
-    print("You can play blackjack here, simply enter your move as hit/stand/double")
-    print("You can use \"double\" to double down, but only on your first move of a hand")
+    # to make the code a bit simpler to read I have left .strip().lower() off user input, so it is their responsibility to enter their move correctly, I may change this later
+    print("To play blackjack here, simply enter your move as hit/stand/double/surrender exactly as written here (lowercase with no spaces)")
+    print("You can use \"double\" to double down, and \"surrender\" to surrender, but only on your first action for a hand")
     print("-" * 27)
 
     mygame = Game(6) # small test to play the game
