@@ -2,7 +2,7 @@ import random
 
 
 class Card:
-    card_value = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "Jack": 10, "Queen": 10, "King": 10} # No ace as it can take two values and is handled later
+    card_value = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "Jack": 10, "Queen": 10, "King": 10, "Ace": None} # Ace given value none as it can take two values and is handled later
 
     def __init__(self, rank, suit):
         self.rank = rank
@@ -54,6 +54,7 @@ class Hand:
         self.is_bust = False
         self.is_doubled = False
         self.is_surrendered = False
+        self.is_split = False
 
     def add_card(self, card):
         self.cards.append(card)
@@ -90,11 +91,20 @@ class Hand:
         self.is_bust = False
         self.is_doubled = False
         self.is_surrendered = False
+        self.is_split = False
+
+    def can_split(self):
+        # can change this function later when rules on when splitting is allowed are more complex
+        if len(self.cards) == 2 and self.cards[0].rank == self.cards[1].rank:
+            return True
+        else:
+            print("This hand cannot be split")
+
 
 
 class Player:
     def __init__(self, strategy=None):
-        self.hand = Hand()
+        self.hands = [Hand()]
         self.strategy = strategy
 
     def player_action(self, dealer_upcard):
@@ -139,7 +149,8 @@ class Game:
 
     def setup_game(self): # deals initial cards and resets from previous rounds
         self.dealer.show_all = False
-        self.player.hand.reset_hand()
+        for hand in self.player.hands:
+            hand.reset_hand()
         self.dealer.hand.reset_hand()
         if self.shoe.check_reshuffle():
             self.shoe.reset_shoe()
@@ -160,53 +171,63 @@ class Game:
             self.dealer.hand.show_hand()
 
     def player_turn(self):
-        score = self.player.hand.calculate_score()
-        
-        while score < 21:
-            if self.is_simulation == False:
-                self.display_cards()
+        for hand_number in range(self.player.hands):
+            current_hand = self.player.hands[hand_number]
+            score = current_hand.calculate_score()
+            
+            while score < 21:
+                if self.is_simulation == False:
+                    self.display_cards()
 
-            dealer_upcard = self.dealer.hand.cards[0]
-            current_action = self.player.player_action(dealer_upcard)
+                dealer_upcard = self.dealer.hand.cards[0]
+                current_action = self.player.player_action(dealer_upcard) # pass in hand number here?
 
-            if current_action == "hit":
-                self.player.hand.add_card(self.shoe.draw_card())
+                if current_action == "hit":
+                    current_hand.add_card(self.shoe.draw_card())
 
-            elif current_action == "stand":
-                break
-
-            elif current_action == "double":
-                if len(self.player.hand.cards) == 2:
-                   self.player.hand.is_doubled = True
-                   self.player.hand.add_card(self.shoe.draw_card())
-                   # when bet amount is added, put code here to double the bet amount
-                   score = self.player.hand.calculate_score() # calculate score, because the break below means we will not otherwise calculate the new score of the hand
-                   break # break out of loop to stop the player from hitting again after they double down
-                else:
-                    if self.is_simulation:
-                        # defensive coding, if a strategy in simulation returns double when it shouldn't, the move is instead defaulted to hit
-                        # beware, as this may cause strategies to behave in an unexpected way, so I will print an error message to make it clear if this occurs
-                        print("Strategy tried to double when not allowed")
-                        self.player.hand.add_card(self.shoe.draw_card())
-                    else:
-                        print("You cannot double down now.")
-
-            elif current_action == "surrender":
-                if len(self.player.hand.cards) == 2:
-                    self.player.hand.is_surrendered = True
-                    # when bankroll is added, half the player bet and return it to them here
+                elif current_action == "stand":
                     break
+
+                elif current_action == "double":
+                    if len(current_hand.cards) == 2:
+                        current_hand.is_doubled = True
+                        current_hand.add_card(self.shoe.draw_card())
+                        # when bet amount is added, put code here to double the bet amount
+                        score = current_hand.calculate_score() # calculate score, because the break below means we will not otherwise calculate the new score of the hand
+                        break # break out of loop to stop the player from hitting again after they double down
+                    else:
+                        if self.is_simulation:
+                            # defensive coding, if a strategy in simulation returns double when it shouldn't, the move is instead defaulted to hit
+                            # beware as this may cause strategies to behave in an unexpected way, so I will print an error message to make it clear if this occurs
+                            print("Strategy tried to double when not allowed")
+                            current_hand.add_card(self.shoe.draw_card())
+                        else:
+                            print("You cannot double down now.")
+
+                elif current_action == "split":
+                    if current_hand.can_split():
+                        new_hand = Hand()
+                        card_to_move = self.player.hands[hand_number].cards.pop()
+                        new_hand.cards.append(card_to_move)
+                    else:
+                        print("Hand cannot be split")
+
+                elif current_action == "surrender":
+                    if len(current_hand.cards) == 2:
+                        current_hand.is_surrendered = True
+                        # when bankroll is added, half the player bet and return it to them here
+                        break
+                    else:
+                        print("You cannot surrender now")
+
                 else:
-                    print("You cannot surrender now")
+                    print("Invalid action")
 
-            else:
-                print("Invalid action")
+                score = current_hand.calculate_score()
 
-            score = self.player.hand.calculate_score()
-
-        if score > 21:
-            self.player.hand.is_bust = True
-
+            if score > 21:
+                current_hand.is_bust = True
+ 
     def dealer_turn(self):
         self.dealer.show_all = True
 
@@ -222,36 +243,38 @@ class Game:
             action = self.dealer.dealer_action()
 
     def determine_winner(self):
-        player_score = self.player.hand.calculate_score()
-        dealer_score = self.dealer.hand.calculate_score()
+        for hand in self.player.hands:
+            player_score = hand.calculate_score()
+            dealer_score = self.dealer.hand.calculate_score()
 
-        if dealer_score > 21:
-            return "Player"
-        elif dealer_score > player_score:
-            return "Dealer"
-        elif player_score > 21 or self.player.hand.is_surrendered:
-            return "Dealer"
-        elif player_score > dealer_score:
-            return "Player"
-        else:
-            return "Push"
+            if dealer_score > 21:
+                return "Player"
+            elif dealer_score > player_score:
+                return "Dealer"
+            elif player_score > 21 or hand.is_surrendered:
+                return "Dealer"
+            elif player_score > dealer_score:
+                return "Player"
+            else:
+                return "Push"
 
     def play_round(self):
         self.setup_game()
         self.player_turn()
 
-        if self.player.hand.is_bust == True:
-            return "Dealer" # player is bust so dealer wins
+        for hand in self.player.hands:
+            if hand.is_bust == True:
+                return "Dealer" # player is bust so dealer wins
 
-        if not self.player.hand.is_surrendered:
-            self.dealer_turn()
+            if not hand.is_surrendered:
+                self.dealer_turn()
 
         return self.determine_winner()
 
 if __name__ == "__main__":
     print("Welcome!")
     # to make the code a bit simpler to read I have left .strip().lower() off user input, so it is their responsibility to enter their move correctly, I may change this later
-    print("To play blackjack here, simply enter your move as hit/stand/double/surrender exactly as written here (lowercase with no spaces)")
+    print("To play blackjack here, simply enter your move as hit/stand/double/surrender/split exactly as written here (lowercase with no spaces)")
     print("You can use \"double\" to double down, and \"surrender\" to surrender, but only on your first action for a hand")
     print("-" * 27)
 
