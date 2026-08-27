@@ -4,6 +4,7 @@ from blackjack import Game, Player
 # CONSTANTS
 NUMBER_OF_HANDS = 100
 DECKS_IN_SHOE = 2
+# MAX_HANDS = 4 use this to control the maximum number of hands a player can have (resplitting control)
 # ideas to add when necessary - initial balance, bet amount, hit on soft 17 (here instead of in blackjack.py?), number of simulations, blackjack payout, when to reshuffle shoe etc.
 
 def never_bust_strategy(hand, dealer_upcard): # dealer_upcard will not be used, but for best OOP practices the main program should not be changed to check if the strategy being used requires this information or not
