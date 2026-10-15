@@ -2,7 +2,7 @@ import random
 
 
 class Card:
-    card_value = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "Jack": 10, "Queen": 10, "King": 10, "Ace": None} # Ace given value none as it can take two values and is handled later
+    card_value = {"2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9, "10": 10, "Jack": 10, "Queen": 10, "King": 10, "Ace": 11} # An ace is given value 11 but it can also be 1, this is handled later in the code
 
     def __init__(self, rank, suit):
         self.rank = rank
@@ -107,12 +107,15 @@ class Player:
         self.hands = [Hand()]
         self.strategy = strategy
 
-    def player_action(self, dealer_upcard):
+    def player_action(self, dealer_upcard, current_hand=None):
+        if current_hand == None: # if no current_hand is passed in we assume the player has not split so we use their first (and only) hand
+            current_hand = self.hands[0]
+
         if self.strategy is None:
-            action = input("Enter player move: ")
+            action = input("Enter player move (hit/stand/double/split/surrender): ")
             return action
         else:
-            return self.strategy(self.hand, dealer_upcard)
+            return self.strategy(current_hand, dealer_upcard)
 
 
 class Dealer:
@@ -149,38 +152,57 @@ class Game:
 
     def setup_game(self): # deals initial cards and resets from previous rounds
         self.dealer.show_all = False
-        for hand in self.player.hands:
-            hand.reset_hand()
+        self.player.hands = [Hand()]
         self.dealer.hand.reset_hand()
+
         if self.shoe.check_reshuffle():
             self.shoe.reset_shoe()
 
         for _ in range(2):
-            self.player.hand.add_card(self.shoe.draw_card())
+            self.player.hands[0].add_card(self.shoe.draw_card())
             self.dealer.hand.add_card(self.shoe.draw_card())
 
-    def display_cards(self):
-        print("----- Players hand -----")
-        self.player.hand.show_hand()
+    def display_cards(self, current_hand_index=None):
+        print("----- Players hand(s) -----")
+        for i in range(len(self.player.hands)):
+            hand = self.player.hands[i]
+            
+            if len(self.player.hands) > 1:
+                if current_hand_index == i:
+                    print(f"Hand {i + 1} <----- Current hand")
+                else:
+                    print("Hand", i + 1)
+            
+            hand.show_hand()
+            score = hand.calculate_score()
+            
+            if hand.is_bust:
+                print("Score:", score, "; Bust")
+            else:
+                print("Score:", score)
+            print() # add empty line for readability
 
-        print("----- Dealers hand -----")
+        print("------ Dealers hand -------")
         if self.dealer.show_all == False:
             print(f"{self.dealer.hand.cards[0].rank} of {self.dealer.hand.cards[0].suit}")
             print("Face-down card")
         else:
             self.dealer.hand.show_hand()
+            print("Score:", self.dealer.hand.calculate_score())
+        print("-" * 27)
 
     def player_turn(self):
-        for hand_number in range(self.player.hands):
-            current_hand = self.player.hands[hand_number]
+        hand_index = 0
+        while hand_index < len(self.player.hands):
+            current_hand = self.player.hands[hand_index]
             score = current_hand.calculate_score()
             
             while score < 21:
-                if self.is_simulation == False:
-                    self.display_cards()
+                if not self.is_simulation:
+                    self.display_cards(hand_index)
 
                 dealer_upcard = self.dealer.hand.cards[0]
-                current_action = self.player.player_action(dealer_upcard) # pass in hand number here?
+                current_action = self.player.player_action(dealer_upcard, current_hand) # pass in hand number here?
 
                 if current_action == "hit":
                     current_hand.add_card(self.shoe.draw_card())
@@ -207,8 +229,14 @@ class Game:
                 elif current_action == "split":
                     if current_hand.can_split():
                         new_hand = Hand()
-                        card_to_move = self.player.hands[hand_number].cards.pop()
-                        new_hand.cards.append(card_to_move)
+                        current_hand.is_split = True
+                        new_hand.is_split = True
+
+                        new_hand.add_card(current_hand.cards.pop())
+                        current_hand.add_card(self.shoe.draw_card())
+                        new_hand.add_card(self.shoe.draw_card())
+                        self.player.hands.append(new_hand)
+
                     else:
                         print("Hand cannot be split")
 
@@ -227,6 +255,7 @@ class Game:
 
             if score > 21:
                 current_hand.is_bust = True
+            hand_index += 1
  
     def dealer_turn(self):
         self.dealer.show_all = True
@@ -243,31 +272,29 @@ class Game:
             action = self.dealer.dealer_action()
 
     def determine_winner(self):
+        results = []
+        dealer_score = self.dealer.hand.calculate_score()
+
         for hand in self.player.hands:
             player_score = hand.calculate_score()
-            dealer_score = self.dealer.hand.calculate_score()
 
-            if dealer_score > 21:
-                return "Player"
-            elif dealer_score > player_score:
-                return "Dealer"
-            elif player_score > 21 or hand.is_surrendered:
-                return "Dealer"
+            if hand.is_bust or hand.is_surrendered:
+                results.append("Dealer")
+            elif dealer_score > 21:
+                results.append("Player")
             elif player_score > dealer_score:
-                return "Player"
+                results.append("Player")
+            elif dealer_score > player_score:
+                results.append("Dealer")
             else:
-                return "Push"
+                results.append("Push")
+
+        return results
 
     def play_round(self):
         self.setup_game()
         self.player_turn()
-
-        for hand in self.player.hands:
-            if hand.is_bust == True:
-                return "Dealer" # player is bust so dealer wins
-
-            if not hand.is_surrendered:
-                self.dealer_turn()
+        self.dealer_turn()
 
         return self.determine_winner()
 
@@ -279,15 +306,15 @@ if __name__ == "__main__":
     print("-" * 27)
 
     mygame = Game(6) # small test to play the game
-    print(mygame.shoe.cut_card_threshold)
-    result = mygame.play_round()
+    print(f"Shoe cut card threshold: {mygame.shoe.cut_card_threshold}")
+    results = mygame.play_round()
     print ("-" * 27)
 
-    if mygame.player.hand.is_bust:
-        mygame.display_cards()
-        print("-" * 24)
-        print("Player bust --> dealer wins")
-    elif result != "Push":
-        print(f"{result} wins")
-    else:
-        print("Push --> Bet returned") # in the case of a push the player keeps their bet, so I will put that in the message even though there is no support for betting yet
+    # enumerate should work here, maybe add that later
+    for i in range(len(results)):
+        hand_outcome = results[i]
+        
+        if hand_outcome == "Push":
+            print("Hand", i + 1, ": Push; bet returned") # in the case of a push the player keeps their bet, so I will put that in the message even though there is no support for betting yet
+        else:
+            print("Hand", i + 1, ":", hand_outcome, "wins")
