@@ -29,21 +29,26 @@ def simulate(strategy, num_hands=NUMBER_OF_HANDS, deckcount=DECKS_IN_SHOE):
     game = Game(deckcount, player, True)
 
     # consider a dedicated dataclass instead of a dictionary as I add support for tracking more metrics
+    total_hands_played = 0
     results = { "Player": 0,
             "Dealer": 0,
             "Push": 0 }
 
     for _ in range(num_hands):
-        result = game.play_round()
+        round_results = game.play_round()
+        total_hands_played += 1
 
-        # double down hands are not considered here, maybe include that later / when bankroll and betting is added
-        if result == "Player":
-            results["Player"] += 1
-        elif result == "Dealer":
-            results["Dealer"] += 1
-        else:
-            results["Push"] += 1
+        for outcome in round_results:
+            if outcome == "Player":
+                results["Player"] += 1
+            elif outcome == "Dealer":
+                results["Dealer"] += 1
+            else:
+                results["Push"] += 1
 
+    # logically these print statements probably dont belong here so I will move them late
+    print(f"Rounds played: {num_hands}")
+    print(f"Total hands played: {total_hands_played}")
     return results
 
 
