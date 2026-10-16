@@ -5,6 +5,7 @@
 # Ds means double if allowed, otherwise stand
 # P means split (this could also be called Sp but P is more common is basic strategy tables)
 # 11 represents an ace here, the logic ensures soft/hard hands are handled appropriately
+# I would like to include tables for surrender but I will come back to that
 
 HARD_STRATEGY = {
     # Hard Totals 4 to 8 (always Hit)
@@ -42,6 +43,9 @@ HARD_STRATEGY = {
 
 
 SOFT_STRATEGY = {
+    # Soft 12 (Ace + Ace when split is disallowed — always hit)
+    (12, 2): "H", (12, 3): "H", (12, 4): "H", (12, 5): "H", (12, 6): "H", (12, 7): "H", (12, 8): "H", (12, 9): "H", (12, 10): "H", (12, 11): "H",
+    
     # Soft 13 and 14 (double vs 5-6 otherwise hit)
     (13, 2): "H", (13, 3): "H", (13, 4): "H", (13, 5): "D", (13, 6): "D", (13, 7): "H", (13, 8): "H", (13, 9): "H", (13, 10): "H", (13, 11): "H",
     (14, 2): "H", (14, 3): "H", (14, 4): "H", (14, 5): "D", (14, 6): "D", (14, 7): "H", (14, 8): "H", (14, 9): "H", (14, 10): "H", (14, 11): "H",
@@ -88,10 +92,10 @@ PAIR_STRATEGY = {
 
     # 10s and face cards (never split - always stand)
     ("10", 2): "S", ("10", 3): "S", ("10", 4): "S", ("10", 5): "S", ("10", 6): "S", ("10", 7): "S", ("10", 8): "S", ("10", 9): "S", ("10", 10): "S", ("10", 11): "S",
-    ("J", 2): "S",  ("J", 3): "S",  ("J", 4): "S",  ("J", 5): "S",  ("J", 6): "S",  ("J", 7): "S",  ("J", 8): "S",  ("J", 9): "S",  ("J", 10): "S",  ("J", 11): "S",
-    ("Q", 2): "S",  ("Q", 3): "S",  ("Q", 4): "S",  ("Q", 5): "S",  ("Q", 6): "S",  ("Q", 7): "S",  ("Q", 8): "S",  ("Q", 9): "S",  ("Q", 10): "S",  ("Q", 11): "S",
-    ("K", 2): "S",  ("K", 3): "S",  ("K", 4): "S",  ("K", 5): "S",  ("K", 6): "S",  ("K", 7): "S",  ("K", 8): "S",  ("K", 9): "S",  ("K", 10): "S",  ("K", 11): "S",
+    ("Jack", 2): "S",  ("Jack", 3): "S",  ("Jack", 4): "S",  ("Jack", 5): "S",  ("Jack", 6): "S",  ("Jack", 7): "S",  ("Jack", 8): "S",  ("Jack", 9): "S",  ("Jack", 10): "S",  ("Jack", 11): "S",
+    ("Queen", 2): "S", ("Queen", 3): "S", ("Queen", 4): "S", ("Queen", 5): "S", ("Queen", 6): "S", ("Queen", 7): "S", ("Queen", 8): "S", ("Queen", 9): "S", ("Queen", 10): "S", ("Queen", 11): "S",
+    ("King", 2): "S",  ("King", 3): "S",  ("King", 4): "S",  ("King", 5): "S",  ("King", 6): "S",  ("King", 7): "S",  ("King", 8): "S",  ("King", 9): "S",  ("King", 10): "S",  ("King", 11): "S",
 
     # Aces (always split)
-    ("A", 2): "P", ("A", 3): "P", ("A", 4): "P", ("A", 5): "P", ("A", 6): "P", ("A", 7): "P", ("A", 8): "P", ("A", 9): "P", ("A", 10): "P", ("A", 11): "P"
+    ("Ace", 2): "P", ("Ace", 3): "P", ("Ace", 4): "P", ("Ace", 5): "P", ("Ace", 6): "P", ("Ace", 7): "P", ("Ace", 8): "P", ("Ace", 9): "P", ("Ace", 10): "P", ("Ace", 11): "P"
 }
