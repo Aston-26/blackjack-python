@@ -55,6 +55,7 @@ class Hand:
         self.is_doubled = False
         self.is_surrendered = False
         self.is_split = False
+        self.allow_split = True # this may seem similar to the last attribute but both are necessary
 
     def add_card(self, card):
         self.cards.append(card)
@@ -92,13 +93,14 @@ class Hand:
         self.is_doubled = False
         self.is_surrendered = False
         self.is_split = False
+        self.allow_split = True
 
-    def can_split(self):
-        # can change this function later when rules on when splitting is allowed are more complex
+    def can_split(self, num_player_hands=1, max_hands=2):
+        if not self.allow_split:
+            return False
         if len(self.cards) == 2 and self.cards[0].rank == self.cards[1].rank:
-            return True
-        else:
-            print("This hand cannot be split")
+            return num_player_hands < max_hands
+        return False
 
 
 
@@ -227,7 +229,7 @@ class Game:
                             print("You cannot double down now.")
 
                 elif current_action == "split":
-                    if current_hand.can_split():
+                    if current_hand.can_split(len(self.player.hands)):
                         new_hand = Hand()
                         current_hand.is_split = True
                         new_hand.is_split = True
@@ -238,7 +240,10 @@ class Game:
                         self.player.hands.append(new_hand)
 
                     else:
-                        print("Hand cannot be split")
+                        if self.is_simulation:
+                            current_hand.allow_split = False
+                        else:
+                            print("This hand cannot be split")
 
                 elif current_action == "surrender":
                     if len(current_hand.cards) == 2:
