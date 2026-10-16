@@ -3,7 +3,7 @@ from tables import HARD_STRATEGY, SOFT_STRATEGY, PAIR_STRATEGY
 # import matplotlib - do this when ready to add graphs
 
 # CONSTANTS
-NUMBER_OF_HANDS = 10000
+NUMBER_OF_HANDS = 100000
 DECKS_IN_SHOE = 2
 # MAX_HANDS = 4 use this to control the maximum number of hands a player can have (resplitting control)
 # ideas to add when necessary - initial balance, bet amount, hit on soft 17 (here instead of in blackjack.py?), number of simulations, blackjack payout, when to reshuffle shoe etc.
@@ -87,7 +87,7 @@ def simulate(strategy, num_hands=NUMBER_OF_HANDS, deckcount=DECKS_IN_SHOE):
 
     for _ in range(num_hands):
         round_results = game.play_round()
-        total_hands_played += 1
+        total_hands_played += len(round_results)
 
         for outcome in round_results:
             if outcome == "Player":
