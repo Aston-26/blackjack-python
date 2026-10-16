@@ -1,8 +1,9 @@
 from blackjack import Game, Player
+from tables import HARD_STRATEGY, SOFT_STRATEGY, PAIR_STRATEGY
 # import matplotlib - do this when ready to add graphs
 
 # CONSTANTS
-NUMBER_OF_HANDS = 100
+NUMBER_OF_HANDS = 10000
 DECKS_IN_SHOE = 2
 # MAX_HANDS = 4 use this to control the maximum number of hands a player can have (resplitting control)
 # ideas to add when necessary - initial balance, bet amount, hit on soft 17 (here instead of in blackjack.py?), number of simulations, blackjack payout, when to reshuffle shoe etc.
@@ -19,9 +20,59 @@ def never_bust_strategy(hand, dealer_upcard): # dealer_upcard will not be used, 
         
     return "hit"
 
+#
+# max_hands is the maximum number of hands a player can currently have, i.e. 2 hands means 1 split is allowed per round
+#
 
-def basic_strategy(hand, dealer_upcard):
-    pass # this return the mathematically optimal move every time
+def basic_strategy(hand, dealer_upcard): # this function returns the mathematically optimal move every time
+    dealer_card_value = dealer_upcard.get_card_value()
+
+    if hand.can_split() and PAIR_STRATEGY[(hand.cards[0].rank, dealer_card_value)] == "P":
+        return "split" # only considering splitting here, all cases where we hit/stand on a pair are handled later
+
+    if hand.is_soft:
+        score = hand.calculate_score()
+        action = SOFT_STRATEGY[(score, dealer_card_value)]
+
+        if action == "S":
+            return "stand"
+        elif action == "H":
+            return "hit"
+        elif action == "D":
+            if len(hand.cards) == 2:
+                return "double"
+            else:
+                return "hit"
+        elif action == "Ds":
+            if len(hand.cards) == 2:
+                return "double"
+            else:
+                return "stand"
+        else: # safety net error message as an action for hard hands should always be S, H, D or Ds
+                    print("Unexpected action given in soft hand action")
+
+    else: # the hand is hard so we use HARD_STRATEGY
+        # these two checks ensure we dont accidentally pass any out of range scores to the dictonary and cause a key error
+        # technically this means the dictionary can be made shorter for HARD_STRATEGY, but for completeness incase it is used later I will leave those cases
+        score = hand.calculate_score()
+        if score >= 17:
+            return "stand"
+        elif score <= 8:
+            return "hit"
+        
+        action = HARD_STRATEGY[(score, dealer_card_value)]
+        if action == "S":
+            return "stand"
+        elif action == "H":
+            return "hit"
+        elif action == "D":
+            if len(hand.cards) == 2:
+                return "double"
+            else:
+                return "hit"
+        else: # safety net error message as an action for hard hands should always be S, H or D (not Ds)
+            print("Unexpected action given in hard hand action")
+
 
 
 def simulate(strategy, num_hands=NUMBER_OF_HANDS, deckcount=DECKS_IN_SHOE):
@@ -53,7 +104,7 @@ def simulate(strategy, num_hands=NUMBER_OF_HANDS, deckcount=DECKS_IN_SHOE):
 
 
 # small test
-results = simulate(never_bust_strategy)
+results = simulate(basic_strategy)
 
 for key, pair in results.items():
     print(f"{key}: {pair}")
