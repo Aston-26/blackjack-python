@@ -1,5 +1,5 @@
 # Blackjack & Simulation
-A simple implementation of Blackjack in Python developed as a personal project to practise writing object-oriented code in a clear and well-structured way. Includes support for running a simulation which plays many rounds according to a player strategy (currently only a never bust strategy but more coming soon) and displays the results.
+My implementation of Blackjack in Python developed as a personal project to investigate expected vs. observed results, learn about convergence and large scale simulations, as well as practise writing object-oriented code in a clear and well-structured way. Includes support for simulating as many hands as you wish according to a player strategy such as basic strategy (optimal decisions) or a never bust strategy and displays the results. Dealer and shoe rules can also be changed, such as how many cards are dealt before the deck is reshuffled and if the dealer hits on a soft 17.
 
 # Important
 I will update this with the results of my simulations and graphs using Matplotlib but I am very busy currently so I will come back and do this as soon as possible. I have investigated how different house rules and sample sizes effect EV, convergence rate, convergence accuracy etc, but not had time to graph it or write it up properly here.
